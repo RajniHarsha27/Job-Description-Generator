@@ -12,7 +12,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 def generate_job_description(role, experience, skills, location):
     prompt = f"""
    Generate a job description for a {role} with {experience} experience, mandatory skills in {skills}. 
-    Location: {location}. Include responsibilities, mandatory skills, required qualifications, and preferred skills.
+    Location: {location}. Include responsibilities, mandatory skills, experience,required qualifications, and preferred skills.
      """
     try:
         # Create the generative model instance
