@@ -2,18 +2,18 @@ import streamlit as st
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-import pandas as pd
 
 # Load environment variables
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Function to generate job description using Gemini API
-def generate_job_description(role, experience, skills, location):
+def generate_job_description(job_title, department, work_mode):
     prompt = f"""
-   Generate a job description for a {role} with {experience} experience, mandatory skills in {skills}. 
-    Location: {location}. Include responsibilities, mandatory skills, experience,required qualifications, and preferred skills.
-     """
+    Generate a job description for a {job_title} in the {department} department. 
+    The work mode for this role is {work_mode}. 
+    Include responsibilities, mandatory skills, required qualifications, and preferred skills.
+    """
     try:
         # Create the generative model instance
         model = genai.GenerativeModel('gemini-pro')
@@ -27,41 +27,27 @@ def generate_job_description(role, experience, skills, location):
 def main():
     st.title("Job Description Generator")
 
-    # Load the uploaded CSV file
-    uploaded_file = 'skills.csv'  # Path to the uploaded file
-    try:
-        df = pd.read_csv(uploaded_file)
-        if 'role' not in df.columns or 'skills' not in df.columns:
-            st.error("The CSV file must contain 'role' and 'skills' columns.")
-            return
-    except Exception as e:
-        st.error(f"Error loading CSV file: {e}")
-        return
-
-    # Select job role
-    selected_role = st.selectbox("Select Job Role", options=df['role'].unique())
-    
-    # Filter skill categories for the selected role
-    related_skills = df[df['role'] == selected_role]['skills'].unique()
-    
-    # Multi-select for related skill categories
-    selected_skills = st.multiselect("Select Skills", options=related_skills)
-
     # Input fields
-    experience = st.text_input("Experience", placeholder="Enter experience (e.g., 3-5 years)")
-    location = st.text_input("Location", placeholder="Enter job location (e.g., Remote)")
+    job_title = st.text_input("Job Title", placeholder="Enter job title (e.g., Data Scientist)")
+
+    departments = [
+        "IT", "Marketing", "Finance", "HR", "Sales", "Engineering", "Operations", 
+        "Legal", "Product Management", "Customer Support", "Design", "R&D"
+    ]
+    department = st.selectbox("Department", options=departments)
+
+    work_mode = st.radio("Your Role is", options=["In-Office", "Hybrid", "Remote"])
 
     # Generate button
     if st.button("Generate Job Description"):
-        if selected_role and experience and selected_skills:
+        if job_title and department and work_mode:
             st.info("Generating job description...")
             # Generate the job description
-            skills_string = ", ".join(selected_skills)
-            job_description = generate_job_description(selected_role, experience, skills_string, location or "Not specified")
+            job_description = generate_job_description(job_title, department, work_mode)
             st.subheader("Generated Job Description:")
             st.text_area("Output", value=job_description, height=300)
         else:
-            st.error("Please fill out the required fields (Job Role, Experience, and Skills).")
+            st.error("Please fill out all the fields (Job Title, Department, and Work Mode).")
 
 if __name__ == "__main__":
     main()
